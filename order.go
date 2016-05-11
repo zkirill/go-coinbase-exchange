@@ -1,8 +1,6 @@
 package coinbase
 
-import (
-	"fmt"
-)
+import "fmt"
 
 type Order struct {
 	Type      string  `json:"type"`
@@ -40,6 +38,25 @@ func (c *Client) CreateOrder(newOrder *Order) (Order, error) {
 	url := fmt.Sprintf("/orders")
 	_, err := c.Request("POST", url, newOrder, &savedOrder)
 	return savedOrder, err
+}
+
+// CancelAllOrders cancels all open orders with best effort.
+// The response is a list of ids of the canceled orders.
+// Specify productID to only cancel orders open for a specific product.
+func (c *Client) CancelAllOrders(productID string) (cancelledOrders []string, err error) {
+	var params struct {
+		ProductID string `json:"product_id,string,omitempty"`
+	}
+
+	if len(productID) > 0 {
+		params.ProductID = productID
+	}
+
+	url := fmt.Sprintf("/orders")
+
+	_, err = c.Request("DELETE", url, params, &cancelledOrders)
+
+	return cancelledOrders, err
 }
 
 func (c *Client) CancelOrder(id string) error {

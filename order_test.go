@@ -75,6 +75,43 @@ func TestCancelOrder(t *testing.T) {
 	}
 }
 
+func TestCancelAllOrders(t *testing.T) {
+	client := NewTestClient()
+
+	order := Order{
+		Price:     1000000.00,
+		Size:      0.01,
+		Side:      "sell",
+		ProductId: "BTC-USD",
+	}
+
+	savedOrder, err := client.CreateOrder(&order)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if savedOrder.Id == "" {
+		t.Error(errors.New("No create id found"))
+	}
+
+	var orders []Order
+
+	cursor := client.ListOrders()
+	for cursor.HasMore {
+		if err := cursor.NextPage(&orders); err != nil {
+			t.Error(err)
+		}
+
+		cancelled, err := client.CancelAllOrders("")
+
+		// TODO Coinbase sandbox is not returning any cancelled order ids. Not sure why.
+
+		if err != nil {
+			t.Error(err)
+		}
+	}
+}
+
 func TestGetOrder(t *testing.T) {
 	client := NewTestClient()
 
